@@ -1,9 +1,16 @@
 import express from "express";
 import morgan from "morgan";
+import { PORT } from "./config/serverConfig.js";
+import apiRouter from "./routes/apiroutes.js";
 
 //Creating a new express app/server object
 const app = express();
-const PORT = 3000;
+console.log(import.meta);
+
+app.set("view engine","ejs");//setting the view engine to ejs
+// app.set("views",);
+
+app.set("views",import.meta.dirname + "/views");
 
 app.use(morgan("combined"));
 
@@ -11,43 +18,24 @@ app.use(express.json());
 app.use(express.text());
 app.use(express.urlencoded());
 
-function mid1(req,res,next){
-    console.log("mid 1");
-    next();
-}
+app.use('/api',apiRouter);//if the req url starts with /api , use the apiRouter
 
-function mid2(req,res,next){
-    console.log("mid 2");
-    next();
-}
+app.get("/",(req,res)=>{
+    res.render("home",{name:"John Doe"});
+})
 
-function CommonMiddleware(res,req,next){
-    console.log("Common Middleware");
-    next();
-}
-
-app.use(CommonMiddleware);
-
-app.get("/ping",[mid1,mid2],(req,res)=>{
+app.get("/ping",(req,res)=>{
     console.log(req.query);//query params
     return res.json({
         message:"pong"
     });
 });
 
-app.get("/tweets/:tweets_id",(req,res)=>{
-    console.log(req.params);//url params
-    console.log(req.body);
-    return res.json({
-        message:"tweet details"
-    });
-});
-
-app.post("/hello",(req,res)=>{
-    return res.json({
-        message:"World"
-    });
-});
+// app.all('*',(req,res)=>{
+//     return res.status(404).json({
+//         message:'Not Found'
+//     });
+// });
 
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`);
